@@ -65,13 +65,51 @@
             </div>
 
             <h4>Order Details</h4>
+            <div class="order-detail-item">
+                <label>Article</label>
+                <select class="form-control" name="OrderDetails[0].ArticleId" onchange="updateArticleDetails(this)">
+                    <option value="">-- Select an article --</option>
+                    @if (ViewData["ArticleOptions"] != null)
+                    {
+                        foreach (var article in (IEnumerable<dynamic>)ViewData["ArticleOptions"])
+                        {
+                            <option value="@article.Value" data-name="@article.Name" data-description="@article.Desc" data-price="@article.Price">@article.Name</option>
+                        }
+                    }
+                </select>
+                
+                <div class="form-group">
+                    <label>Nom de l'article</label>
+                    <input class="form-control" name="OrderDetails[0].Article.Name" type="text" readonly />
+                    <span asp-validation-for="OrderDetails[0].Article.Name" class="text-danger"></span>
+                </div>
 
-            
+                <div class="form-group">
+                    <label>Description de l'article</label>
+                    <input class="form-control" name="OrderDetails[0].Article.Description" type="text" readonly />
+                    <span asp-validation-for="OrderDetails[0].Article.Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Prix unitaire (€)</label>
+                    <input class="form-control" name="OrderDetails[0].UnitPrice" type="text" readonly />
+                    <span asp-validation-for="OrderDetails[0].UnitPrice" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Quantité</label>
+                    <input class="form-control" name="OrderDetails[0].Quantity" type="number" min="1" />
+                    <span asp-validation-for="OrderDetails[0].Quantity" class="text-danger"></span>
+                </div>
+
+
+            </div>
 
             <div id="orderDetailsContainer">
             </div>
 
             <div id="orderDetailTemplate" class="order-detail-item d-none">
+                <hr />
                 <div class="form-group">
                     <label>Article</label>
 
@@ -118,14 +156,14 @@
             @section Scripts {
                 <script>
                     $(document).ready(function () {
-                        let orderDetailIndex = 0;
+                        let orderDetailIndex = 1;
 
                         $('#addOrderDetail').click(function () {
                             let newOrderDetail = $('#orderDetailTemplate').clone().removeClass('d-none');
                             newOrderDetail.attr('id', '');
 
                             newOrderDetail.find("input, select").each(function () {
-                                let name = $(this).attr('name').replace('OrderDetails[0]', 'OrderDetails[' + orderDetailIndex + ']');
+                                let name = $(this).attr('name').replace('OrderDetails[' + orderDetailIndex + ']', 'OrderDetails[' + orderDetailIndex + 1 + ']');
                                 $(this).attr('name', name);
                             });
 

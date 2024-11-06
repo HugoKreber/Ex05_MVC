@@ -65,7 +65,7 @@ namespace Ex05_MVC.Controllers
 				warehouseService.Update(warhouseOfORder);
 
                 orderService.Add(orderToAdd);
-                return View("Index");
+                return RedirectToAction(nameof(Index));
             }
             else
             {
@@ -132,7 +132,7 @@ namespace Ex05_MVC.Controllers
             var list = orderService.GetOrders().Select(x => Mapping.ToOrderViewModel(x));
             if (ModelState.IsValid)
                 return View(list);
-            else return View(null);
+            else return View();
         }
 
 
