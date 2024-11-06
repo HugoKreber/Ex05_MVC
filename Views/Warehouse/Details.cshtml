@@ -1,0 +1,80 @@
+﻿@model Exercice_5_MVC.Models.WarehouseVM
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Warehouse</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Address)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Address)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PostalCode)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PostalCode)
+        </dd>
+    </dl>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@if (Model.Orders != null && Model.Orders.Any())
+
+{
+    <h4>Order Details</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detail in Model.Orders)
+
+
+
+            {
+                <tr>
+                    <td>@detail.OrderDate</td>
+                    <td>@detail.OrderStatus</td>
+                    <td>@detail.OrderDetails</td>
+                    <td>@detail.CustomerName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+else
+
+{
+    <p>Aucun détail de commande n'est disponible pour cet entrepôt.</p>
+}
+

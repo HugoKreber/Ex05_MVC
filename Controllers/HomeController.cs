@@ -1,8 +1,8 @@
-using Ex05_MVC.Models;
+﻿using Exercice_5_MVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Ex05_MVC.Controllers
+namespace Exercice_5_MVC.Controllers
 {
     public class HomeController : Controller
     {

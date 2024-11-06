@@ -1,4 +1,4 @@
-namespace Ex05_MVC.Models
+namespace Exercice_5_MVC.Models
 {
     public class ErrorViewModel
     {
