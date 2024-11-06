@@ -74,12 +74,16 @@
             <div id="orderDetailTemplate" class="order-detail-item d-none">
                 <div class="form-group">
                     <label>Article</label>
+
                     <select class="form-control" name="OrderDetails[0].ArticleId" onchange="updateArticleDetails(this)">
-                        <option value="" data-name="" data-description="" data-price="0">-- Sélectionner un article --</option>
-                        <option value="1" data-name="Ordinateur Portable" data-description="Ordinateur portable performant" data-price="1000">Ordinateur Portable</option>
-                        <option value="2" data-name="Téléphone" data-description="Téléphone intelligent" data-price="600">Téléphone</option>
-                        <option value="3" data-name="Tablette" data-description="Tablette tactile" data-price="400">Tablette</option>
-                    </select>
+                    <option value="">-- Select an article --</option>
+                    @if (ViewData["ArticleOptions"] != null){
+                            foreach (var article in (IEnumerable<dynamic>)ViewData["ArticleOptions"])
+                        {
+                                <option value="@article.Value" data-name="@article.Name" data-description="@article.Desc" data-price="@article.Price">@article.Name</option>
+                        }
+                    }
+                </select>
                 </div>
 
                 <div class="form-group">

@@ -31,6 +31,16 @@ namespace Ex05_MVC.Controllers
                 })
 				.ToList();
 			ViewData["WarehouseOptions"] = warehouseNames;
+			var articles = articleService.GetArticles()
+				.Select(w => new 
+				{
+					Name = w.Name,
+					Price = w.Price,
+					Desc = w.Description,
+					Value = w.Id
+                })
+				.ToList();
+			ViewData["ArticleOptions"] = articles;
             return View();
 		}
 
@@ -55,7 +65,7 @@ namespace Ex05_MVC.Controllers
 				warehouseService.Update(warhouseOfORder);
 
                 orderService.Add(orderToAdd);
-                return View();
+                return View("Index");
             }
             else
             {
@@ -77,6 +87,16 @@ namespace Ex05_MVC.Controllers
 				})
 				.ToList();
                 ViewData["WarehouseOptions"] = warehouseNames;
+                var articles = articleService.GetArticles()
+				.Select(w => new
+				{
+					Name = w.Name,
+					Price = w.Price,
+					Desc = w.Description,
+					Value = w.Id
+				})
+				.ToList();
+							ViewData["ArticleOptions"] = articles;
                 return View(orderVm);
             }
              
