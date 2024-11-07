@@ -54,15 +54,8 @@ namespace Ex05_MVC.Controllers
             {
 				Order orderToAdd = Mapping.ToOrder(orderVm);
 
-				//incr ID
-                int maxIdOrder = orderService.GetOrders().OrderByDescending(o => o.Id).FirstOrDefault().Id;
-                orderToAdd.Id = maxIdOrder+1;
 
 
-				//UpdateWarehouse
-				Warehouse warhouseOfORder = warehouseService.GetWarehouses().Where(w => w.Id == orderToAdd.WarehouseId).FirstOrDefault();
-				warhouseOfORder.Orders.Add(orderToAdd);
-				warehouseService.Update(warhouseOfORder);
 
                 orderService.Add(orderToAdd);
                 return RedirectToAction(nameof(Index));
@@ -105,7 +98,26 @@ namespace Ex05_MVC.Controllers
 		// GET: OrderController/Edit/5
 		public ActionResult Edit(int id)
 		{
-			return View();
+			var vm = Mapping.ToOrderViewModel(orderService.GetOrders().SingleOrDefault(o => o.Id == id));
+            var warehouseNames = warehouseService.GetWarehouses()
+			.Select(w => new
+			{
+				Text = w.Name,
+				Value = w.Id
+			})
+			.ToList();
+            ViewData["WarehouseOptions"] = warehouseNames;
+            var articles = articleService.GetArticles()
+                .Select(w => new
+                {
+                    Name = w.Name,
+                    Price = w.Price,
+                    Desc = w.Description,
+                    Value = w.Id
+                })
+                .ToList();
+            ViewData["ArticleOptions"] = articles;
+            return View(vm);
 		}
 
 		// POST: OrderController/Edit/5
@@ -117,11 +129,42 @@ namespace Ex05_MVC.Controllers
 			{
                 if (ModelState.IsValid)
                 {
-                    orderService.Add(Mapping.ToOrder(orderVm));
+                    orderService.Update(Mapping.ToOrder(orderVm));
                     return RedirectToAction(nameof(Index));
                 }
-                else { return View(); }
-			}
+                else
+                {
+                    var errors = ModelState.Select(x => x.Value.Errors)
+                                           .Where(y => y.Count > 0)
+                                           .ToList();
+                    List<string> errorsString = new List<string>();
+                    errors.ForEach(x =>
+                    {
+                        x.ToList().ForEach(e => errorsString.Add(e.ErrorMessage));
+
+                    });
+                    TempData["error"] = errorsString;
+                    var warehouseNames = warehouseService.GetWarehouses()
+                    .Select(w => new
+                    {
+                        Text = w.Name,
+                        Value = w.Id
+                    })
+                    .ToList();
+                    ViewData["WarehouseOptions"] = warehouseNames;
+                    var articles = articleService.GetArticles()
+                    .Select(w => new
+                    {
+                        Name = w.Name,
+                        Price = w.Price,
+                        Desc = w.Description,
+                        Value = w.Id
+                    })
+                    .ToList();
+                    ViewData["ArticleOptions"] = articles;
+                    return View(orderVm);
+                }
+            }
 			catch
 			{
 				return View();

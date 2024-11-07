@@ -1,4 +1,5 @@
 ﻿using BO;
+using Exercice_5_MVC.Service.Exercice_4_MVC.Service;
 
 namespace Ex05_MVC.Service
 {
@@ -8,6 +9,13 @@ namespace Ex05_MVC.Service
 
         public void Add(Order order)
         {
+            //incr ID
+            int maxIdOrder = GetOrders().OrderByDescending(o => o.Id).FirstOrDefault().Id;
+            order.Id = maxIdOrder + 1;
+
+            
+            Warehouse warhouseOfORder = dbContext.Warehouses.SingleOrDefault(w => w.Id == order.WarehouseId);
+            warhouseOfORder.Orders.Add(order);
             dbContext.Orders.Add(order); 
         }
 
@@ -23,8 +31,13 @@ namespace Ex05_MVC.Service
 
         internal void Update(Order orderUpdated)
         {
-            var orderBdd = dbContext.Orders.SingleOrDefault(o => o.Id == orderUpdated.Id);
-            orderBdd = orderUpdated;
+            int index = dbContext.Orders.FindIndex(o => o.Id == orderUpdated.Id);
+
+
+            if (index != -1)
+            {
+                dbContext.Orders[index] = orderUpdated;
+            }
         }
     }
 }
