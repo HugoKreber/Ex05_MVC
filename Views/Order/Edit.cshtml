@@ -4,7 +4,12 @@
 
 <h1>Edit Order</h1>
 <hr />
-
+@{
+    ViewData["Title"] = "Edit Order";
+    var articleOptionsJson = System.Text.Json.JsonSerializer.Serialize(ViewData["ArticleOptions"]);
+    var warehouseOptionsJson = System.Text.Json.JsonSerializer.Serialize(ViewData["WarehouseOptions"]);
+    var initialOrderJson = System.Text.Json.JsonSerializer.Serialize(Model);
+}
 @if (TempData["error"] != null && TempData["error"] is List<string> errors)
 {
     <div class="alert alert-danger">
@@ -16,176 +21,102 @@
         </ul>
     </div>
 }
-
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <!-- Pre-fill customer data -->
-            <div class="form-group">
-                <label asp-for="CustomerName" class="control-label"></label>
-                <input asp-for="CustomerName" class="form-control" value="@Model.CustomerName" />
-                <span asp-validation-for="CustomerName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" value="@Model.Email" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ShippingAddress" class="control-label"></label>
-                <input asp-for="ShippingAddress" class="form-control" value="@Model.ShippingAddress" />
-                <span asp-validation-for="ShippingAddress" class="text-danger"></span>
-            </div>
-
-            <!-- Total Amount field (calculated dynamically via JavaScript) -->
-            <div class="form-group">
-                <label asp-for="TotalAmount" class="control-label"></label>
-                <input asp-for="TotalAmount" class="form-control" value="@Model.TotalAmount" readonly />
-                <span asp-validation-for="TotalAmount" class="text-danger"></span>
-            </div>
-
-            <!-- Warehouse selection -->
-            <div class="form-group">
-                <label asp-for="WarehouseId" class="control-label"></label>
-                <select asp-for="WarehouseId" class="form-control">
-                    <option value="">-- Select a Warehouse --</option>
-                    @foreach (var warehouse in (IEnumerable<dynamic>)ViewData["WarehouseOptions"])
-                    {
-                        <option value="@warehouse.Value" selected="@(Model.WarehouseId == warehouse.Value ? "selected" : null)">
-                            @warehouse.Text
-                        </option>
-                    }
-                </select>
-                <span asp-validation-for="WarehouseId" class="text-danger"></span>
-            </div>
-
-            <!-- Order Status selection -->
-            <div class="form-group">
-                <label asp-for="OrderStatus" class="control-label"></label>
-                <select asp-for="OrderStatus" class="form-control">
-                    @foreach (var status in Html.GetEnumSelectList<OrderStatusEnum>())
-                    {
-
-                        <option value="@status.Value" selected="@(Model.OrderStatus == ((OrderStatusEnum)Int32.Parse(status.Value)).ToString() ? "selected" : null)">
-                            @status.Text
-                        </option>
-                    }
-                </select>
-                <span asp-validation-for="OrderStatus" class="text-danger"></span>
-            </div>
-
-            <!-- Existing Order Details -->
-            <h4>Order Details</h4>
-            <div id="orderDetailsContainer">
-                @for (var i = 0; i < Model.OrderDetails.Count; i++)
-                {
-                    <div class="order-detail-item">
-                        <hr />
-                        <div class="form-group">
-                            <label>Article</label>
-                            <select class="form-control" name="OrderDetails[@i].ArticleId" onchange="updateArticleDetails(this)">
-                                <option value="">-- Select an article --</option>
-                                @foreach (var article in (IEnumerable<dynamic>)ViewData["ArticleOptions"])
-                                {
-                                    <option value="@article.Value" selected="@(Model.OrderDetails[i].ArticleId == article.Value ? "selected" : null)"
-                                            data-name="@article.Name"
-                                            data-description="@article.Desc"
-                                            data-price="@article.Price">
-                                        @article.Name
-                                    </option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Nom de l'article</label>
-                            <input class="form-control" name="OrderDetails[@i].Article.Name" type="text" readonly value="@Model.OrderDetails[i].Article.Name" />
-                        </div>
-
-                        <div class="form-group">
-                            <label>Description de l'article</label>
-                            <input class="form-control" name="OrderDetails[@i].Article.Description" type="text" readonly value="@Model.OrderDetails[i].Article.Description" />
-                        </div>
-
-                        <div class="form-group">
-                            <label>Prix unitaire (€)</label>
-                            <input class="form-control" name="OrderDetails[@i].UnitPrice" type="text" readonly value="@Model.OrderDetails[i].UnitPrice" />
-                        </div>
-
-                        <div class="form-group">
-                            <label>Quantité</label>
-                            <input class="form-control" name="OrderDetails[@i].Quantity" type="number" min="1" value="@Model.OrderDetails[i].Quantity" oninput="updateTotalAmount()" />
-                        </div>
-
-                        <button type="button" class="btn btn-danger remove-order-detail mt-2">Remove</button>
-                    </div>
-                }
-            </div>
-
-            <!-- Template for adding new Order Detail dynamically -->
-            <div id="orderDetailTemplate" class="order-detail-item d-none">
-                <!-- same as in original but without pre-filled values -->
-            </div>
-
-            <button type="button" id="addOrderDetail" class="btn btn-secondary mt-3">Add Order Detail</button>
-
-            @section Scripts {
-                <script>
-                    $(document).ready(function () {
-                        let orderDetailIndex = @Model.OrderDetails.Count;
-
-                        $('#addOrderDetail').click(function () {
-                            let newOrderDetail = $('#orderDetailTemplate').clone().removeClass('d-none');
-                            newOrderDetail.attr('id', '');
-                            newOrderDetail.find("input, select").each(function () {
-                                let name = $(this).attr('name').replace('OrderDetails[0]', 'OrderDetails[' + orderDetailIndex + ']');
-                                $(this).attr('name', name);
-                            });
-                            $('#orderDetailsContainer').append(newOrderDetail);
-                            orderDetailIndex++;
-                        });
-
-                        $(document).on('click', '.remove-order-detail', function () {
-                            $(this).closest('.order-detail-item').remove();
-                            updateTotalAmount();
-                        });
-
-                        updateTotalAmount();
-                    });
-
-                    function updateArticleDetails(selectElement) {
-                        var selectedOption = selectElement.options[selectElement.selectedIndex];
-                        var name = selectedOption.getAttribute("data-name");
-                        var description = selectedOption.getAttribute("data-description");
-                        var price = selectedOption.getAttribute("data-price");
-
-                        $(selectElement).closest('.order-detail-item').find('input[name*="Article.Name"]').val(name);
-                        $(selectElement).closest('.order-detail-item').find('input[name*="Article.Description"]').val(description);
-                        $(selectElement).closest('.order-detail-item').find('input[name*="UnitPrice"]').val(price);
-
-                        updateTotalAmount();
-                    }
-
-                    function updateTotalAmount() {
-                        let total = 0;
-                        $('#orderDetailsContainer .order-detail-item').each(function () {
-                            const unitPrice = parseFloat($(this).find('input[name*="UnitPrice"]').val()) || 0;
-                            const quantity = parseInt($(this).find('input[name*="Quantity"]').val()) || 0;
-                            total += unitPrice * quantity;
-                        });
-                        $('input[name="TotalAmount"]').val(total);
-                    }
-                </script>
-            }
-            
-            <div class="form-group">
-                <input type="submit" value="Edit" class="btn btn-primary" />
-            </div>
-        </form>
+<div id="orderEditForm">
+<form>
+    <div class="form-group">
+        <label>Nom du client</label>
+        <input v-model="order.CustomerName" class="form-control" required />
     </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input v-model="order.Email" type="email" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>Adresse de livraison</label>
+        <input v-model="order.ShippingAddress" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>Total Amount (€)</label>
+        <input v-model="order.totalAmount" class="form-control" readonly />
+    </div>
+
+        <div class="form-group">
+            <label>Nom de l'entrepot</label>
+            <select v-model="order.WarehouseId" class="form-control">
+                <option value="">-- Select a warehouse --</option>
+                <option v-for="warehouse in warehouses" :key="warehouse.Value" :value="warehouse.Value">
+                    {{ warehouse.Text }}
+                </option>
+            </select>
+        </div>
+
+    <div class="form-group">
+        <label>Order Status</label>
+        <select v-model="order.OrderStatus" class="form-control">
+            <option v-for="status in orderStatusOptions" :key="status.value" :value="status.value">
+                {{ status.label }}
+            </option>
+        </select>
+    </div>
+    <h4>Order Details</h4>
+    <div v-for="(detail, index) in order.OrderDetails" :key="index" class="order-detail-item">
+        <div class="form-group">
+            <label>Article</label>
+                <select v-model="detail.ArticleId" @@change="updateArticleDetails(detail)" class="form-control" :disabled="order.OrderStatus === 'Processing'">
+                   
+
+                <option value="">-- Select an article --</option>
+                <option v-for="article in articles" :key="article.Id" :value="article.Id">
+                    {{ article.Name }}
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Nom de l'article</label>
+            <input v-model="detail.Article.Name" class="form-control" readonly />
+        </div>
+
+        <div class="form-group">
+            <label>Description de l'article</label>
+            <input v-model="detail.Article.Description" class="form-control" readonly />
+        </div>
+
+        <div class="form-group">
+            <label>Prix unitaire (€)</label>
+            <input v-model="detail.UnitPrice" class="form-control" readonly />
+        </div>
+
+        <div class="form-group">
+            <label>Quantité</label>
+                <input v-model.number="detail.Quantity" type="number" min="1" class="form-control" :disabled="order.OrderStatus === 'Processing'" />
+        </div>
+            <br />
+            <button type="button" @@click="removeOrderDetail(index)" class="btn btn-danger" :disabled="order.OrderStatus === 'Processing'" >Supprimer</button>
+        <hr />
+    </div>
+    
+    <button type="button" @@click="addOrderDetail" class="btn btn-secondary">Ajouter un détail de commande</button>
+
+    <div class="form-group mt-3">
+        <button type="submit" @@click.prevent="submitForm" class="btn btn-primary">Enregistrer les modifications</button>
+    </div>
+</form>
 </div>
+            <!-- Inclure Vue.js et le fichier de l'application -->
+<script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+
+            <script>
+                const articlesFromServer = @Html.Raw(articleOptionsJson);
+                const warehousesFromServer = @Html.Raw(warehouseOptionsJson);
+                const initialOrderModel = @Html.Raw(initialOrderJson);
+            </script>
+            <script src="~/js/OrderEditForm.js"></script>
+
+
 
 <div>
     <a asp-action="Index">Back to List</a>

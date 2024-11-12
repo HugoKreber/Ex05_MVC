@@ -32,13 +32,7 @@ namespace Ex05_MVC.Controllers
 				.ToList();
 			ViewData["WarehouseOptions"] = warehouseNames;
 			var articles = articleService.GetArticles()
-				.Select(w => new 
-				{
-					Name = w.Name,
-					Price = w.Price,
-					Desc = w.Description,
-					Value = w.Id
-                })
+				
 				.ToList();
 			ViewData["ArticleOptions"] = articles;
             return View();
@@ -46,8 +40,7 @@ namespace Ex05_MVC.Controllers
 
 		// POST: OrderController/Create
 		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public ActionResult Create(OrderViewModel orderVm)
+        public async Task<IActionResult> Create([FromBody] OrderViewModel orderVm)
 		{
 			orderVm.OrderDate = DateTime.Today;
             if (ModelState.IsValid)
@@ -56,9 +49,8 @@ namespace Ex05_MVC.Controllers
 
 
 
-
                 orderService.Add(orderToAdd);
-                return RedirectToAction(nameof(Index));
+                return Ok(new { redirectUrl = Url.Action("Index", "Order") });
             }
             else
             {
@@ -81,16 +73,11 @@ namespace Ex05_MVC.Controllers
 				.ToList();
                 ViewData["WarehouseOptions"] = warehouseNames;
                 var articles = articleService.GetArticles()
-				.Select(w => new
-				{
-					Name = w.Name,
-					Price = w.Price,
-					Desc = w.Description,
-					Value = w.Id
-				})
+
 				.ToList();
-							ViewData["ArticleOptions"] = articles;
-                return View(orderVm);
+				ViewData["ArticleOptions"] = articles;
+
+                return BadRequest(new { message = string.Join(" ", errorsString) });
             }
              
         }
@@ -108,29 +95,24 @@ namespace Ex05_MVC.Controllers
 			.ToList();
             ViewData["WarehouseOptions"] = warehouseNames;
             var articles = articleService.GetArticles()
-                .Select(w => new
-                {
-                    Name = w.Name,
-                    Price = w.Price,
-                    Desc = w.Description,
-                    Value = w.Id
-                })
+
                 .ToList();
             ViewData["ArticleOptions"] = articles;
             return View(vm);
 		}
 
-		// POST: OrderController/Edit/5
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public ActionResult Edit(int id, OrderViewModel orderVm)
+        
+        
+            // POST: OrderController/Edit/5
+        [HttpPost]
+        public async Task<IActionResult> Edit([FromBody] OrderViewModel orderVm)
 		{
 			try
 			{
                 if (ModelState.IsValid)
                 {
                     orderService.Update(Mapping.ToOrder(orderVm));
-                    return RedirectToAction(nameof(Index));
+                    return Ok(new { redirectUrl = Url.Action("Index", "Order") });
                 }
                 else
                 {
@@ -157,12 +139,13 @@ namespace Ex05_MVC.Controllers
                     {
                         Name = w.Name,
                         Price = w.Price,
-                        Desc = w.Description,
-                        Value = w.Id
+                        Description = w.Description,
+                        Id = w.Id,
+                        StockQuantity = w.StockQuantity
                     })
                     .ToList();
                     ViewData["ArticleOptions"] = articles;
-                    return View(orderVm);
+                    return BadRequest(new { message = string.Join(" ", errorsString) });
                 }
             }
 			catch

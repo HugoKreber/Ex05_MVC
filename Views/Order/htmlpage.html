@@ -1,0 +1,156 @@
+﻿@{
+    ViewData["Title"] = "Create Order";
+}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="orderFormApp">
+        <h1>Create Order</h1>
+        <hr />
+
+        <!-- Ajout de novalidate pour désactiver les validations de Razor -->
+        <form @submit.prevent="submitForm" novalidate>
+            <!-- Données de base du client -->
+            <div class="form-group">
+                <label>Nom du client</label>
+                <input v-model="order.CustomerName" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input v-model="order.Email" type="email" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+                <label>Adresse de livraison</label>
+                <input v-model="order.ShippingAddress" class="form-control" required />
+            </div>
+
+            <!-- Montant total -->
+            <div class="form-group">
+                <label>Total Amount (€)</label>
+                <input v-model="totalAmount" class="form-control" readonly />
+            </div>
+
+            <!-- Détails de commande dynamiques -->
+            <h4>Order Details</h4>
+            <div v-for="(detail, index) in order.OrderDetails" :key="index" class="order-detail-item">
+                <div class="form-group">
+                    <label>Article</label>
+                    <select v-model="detail.ArticleId" @change="updateArticleDetails(detail)" class="form-control">
+                        <option value="">-- Select an article --</option>
+                        <option v-for="article in articles" :key="article.Value" :value="article.Value"
+                                :data-name="article.Name" :data-description="article.Desc" :data-price="article.Price">
+                            {{ article.Name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nom de l'article</label>
+                    <input v-model="detail.Article.Name" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Description de l'article</label>
+                    <input v-model="detail.Article.Description" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Prix unitaire (€)</label>
+                    <input v-model="detail.UnitPrice" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Quantité</label>
+                    <input v-model.number="detail.Quantity" type="number" min="1" class="form-control" @input="updateTotalAmount" />
+                </div>
+
+                <button type="button" @click="removeOrderDetail(index)" class="btn btn-danger">Supprimer</button>
+                <hr />
+            </div>
+
+            <!-- Bouton pour ajouter un détail de commande -->
+            <button type="button" @click="addOrderDetail" class="btn btn-secondary">Ajouter un détail de commande</button>
+
+            <!-- Bouton pour soumettre le formulaire -->
+            <div class="form-group mt-3">
+                <button type="submit" class="btn btn-primary">Créer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Inclure Vue.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+
+    <script>
+        new Vue({
+            el: '#orderFormApp',
+            data() {
+                return {
+                    order: {
+                        CustomerName: '',
+                        Email: '',
+                        ShippingAddress: '',
+                        OrderDetails: [{
+                            ArticleId: '',
+                            Article: { Name: '', Description: '' },
+                            UnitPrice: 0,
+                            Quantity: 1
+                        }]
+                    },
+                    articles: [
+                        { Value: 1, Name: 'Article 1', Desc: 'Description 1', Price: 10 },
+                        { Value: 2, Name: 'Article 2', Desc: 'Description 2', Price: 15 },
+                        // Ajouter d'autres articles selon les besoins
+                    ]
+                }
+            },
+            computed: {
+                totalAmount() {
+                    return this.order.OrderDetails.reduce((total, detail) => {
+                        return total + (detail.UnitPrice * detail.Quantity);
+                    }, 0);
+                }
+            },
+            methods: {
+                addOrderDetail() {
+                    this.order.OrderDetails.push({
+                        ArticleId: '',
+                        Article: { Name: '', Description: '' },
+                        UnitPrice: 0,
+                        Quantity: 1
+                    });
+                },
+                removeOrderDetail(index) {
+                    this.order.OrderDetails.splice(index, 1);
+                },
+                updateArticleDetails(detail) {
+                    const article = this.articles.find(a => a.Value === detail.ArticleId);
+                    if (article) {
+                        detail.Article.Name = article.Name;
+                        detail.Article.Description = article.Desc;
+                        detail.UnitPrice = article.Price;
+                        this.updateTotalAmount();
+                    }
+                },
+                updateTotalAmount() {
+                    // In Vue, totalAmount will update automatically due to computed property
+                },
+                submitForm() {
+                    // Ici, vous pouvez gérer la soumission via AJAX ou autre
+                    console.log("Form submitted:", this.order);
+                    alert("Form submitted! Check console for data.");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
